@@ -1,25 +1,48 @@
 var scrape = require('scrape');
+var Db = require('mongodb').Db,
+    MongoClient = require('mongodb').MongoClient,
+    Server = require('mongodb').Server,
+    ReplSetServers = require('mongodb').ReplSetServers,
+    ObjectID = require('mongodb').ObjectID,
+    Binary = require('mongodb').Binary,
+    GridStore = require('mongodb').GridStore,
+    Code = require('mongodb').Code,
+    BSON = require('mongodb').pure().BSON,
+    assert = require('assert');
+var db = new Db('tavern_scene', new Server('localhost', 27017, {}), {w:1});
+
 var players = [];
 var Systems = { DD35:"Dungeons & Dragons (3.5 Edition)",
   DD4:"Dungeons & Dragons (4th Edition)",
   PATHFINDER:"Pathfinder",
   DD:"Dungeons & Dragons"};
+
 function lfgReader(err, $) {
   if (err) return console.error(err);
-  var players = [];
-  $('div .thing').each(parseLfgDiv);
+  var things = $('div .thing');
+  db.open(function(err, client) {
+    client.createCollection("players", function(err,col) {
+      client.collection("players", function(err, col) {
+        for (var i = 0, l = things.length; i < l; i++) {
+          var player = parseLfgDiv(scrape.bindToElement(things[i]));
+          console.log(player);
+          col.insert(player, function() {});
+        }
+      });
+    });
+  });
 }
 
 function parseLfgDiv(div,i) {
   var a = div.find('a.title').first();
   var id = div.attribs['data-fullname'];
-  players.push(newPlayer(id,a));
-  console.log(players);
+  return newPlayer(id,a);
 }
 
 function newPlayer(id,a) {
   var title = a.text;
   return {id:id,
+    title:title,
     link:a.attribs['href'],
     system:parseSystem(title),
     location:parseLocation(title)
