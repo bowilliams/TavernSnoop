@@ -44,32 +44,32 @@ function newPlayer(id,a) {
   return {id:id,
     title:title,
     link:a.attribs['href'],
-    system:parseSystem(title),
-    location:parseLocation(title)
+    system:parseSystem(title.toLowerCase()),
+    location:parseLocation(title.toLowerCase())
   };
 }
 
 function parseSystem(title) {
   var systems = [];
-  if (title.toLowerCase().indexOf('pathfinder')>0) {
+  if (title.indexOf('pathfinder')>0) {
     systems.push(Systems.PATHFINDER);
   }
-  if (title.toLowerCase().indexOf('3.5') > 0) {
+  if (title.indexOf('3.5') > 0) {
     systems.push(Systems.DD35);
   }
-  if (title.toLowerCase().indexOf('4e') > 0) {
+  if (title.indexOf('4e') > 0) {
     systems.push(Systems.DD4);
   }
-  if (title.toLowerCase().indexOf('d&d') > 0 || 
-      (title.toLowerCase().indexOf('dungeons') > 0 && 
-       title.toLowerCase().indexOf('dragons') >0)) {
+  if (title.indexOf('d&d') > 0 || 
+      (title.indexOf('dungeons') > 0 && 
+       title.indexOf('dragons') >0)) {
     systems.push(Systems.DD);
   }
   return systems;
 }
 
 function parseLocation(title) {
-  return title.substr('[Offline]') >0 ? 'Offline' : 'Online';
+  return (title.indexOf('[offline]') > 0) ? 'Offline' : 'Online';
 }
 
 scrape.request('http://www.reddit.com/r/lfg', lfgReader);
